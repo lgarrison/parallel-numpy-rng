@@ -130,7 +130,7 @@ def test_uniform_matches_numpy(someN, seed, nthread, dtype):
         b = rng.random(size=N, dtype=dtype)
         
         if dtype == np.float64:
-            assert np.allclose(s, p, atol=1e-15, rol=0.)
+            assert np.allclose(a, b, atol=1e-15, rol=0.)
         elif dtype == np.float32:
             assert np.allclose(a, b, atol=1e-7)
         else:
