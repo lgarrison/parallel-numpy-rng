@@ -73,9 +73,9 @@ def test_threads(allN, seed, nthread, dtype, funcname):
         # different code paths are taken based on alignment.
         # We will use atol because our values are all O(unity)
         if dtype == np.float32:
-            assert np.allclose(s, p, atol=1e-7, rol=0.)
+            assert np.allclose(s, p, atol=1e-7, rtol=0.)
         elif dtype == np.float64:
-            assert np.allclose(s, p, atol=1e-15, rol=0.)
+            assert np.allclose(s, p, atol=1e-15, rtol=0.)
     
     
 def test_resume(someN, seed, nthread, dtype, funcname):
@@ -105,9 +105,9 @@ def test_resume(someN, seed, nthread, dtype, funcname):
             i += n
 
         if dtype == np.float32:
-            assert np.allclose(a, res, atol=1e-7, rol=0.)
+            assert np.allclose(a, res, atol=1e-7, rtol=0.)
         elif dtype == np.float64:
-            assert np.allclose(a, res, atol=1e-15, rol=0.)
+            assert np.allclose(a, res, atol=1e-15, rtol=0.)
 
     
 def test_uniform_matches_numpy(someN, seed, nthread, dtype):
@@ -130,7 +130,7 @@ def test_uniform_matches_numpy(someN, seed, nthread, dtype):
         b = rng.random(size=N, dtype=dtype)
         
         if dtype == np.float64:
-            assert np.allclose(a, b, atol=1e-15, rol=0.)
+            assert np.allclose(a, b, atol=1e-15, rtol=0.)
         elif dtype == np.float32:
             assert np.allclose(a, b, atol=1e-7)
         else:
