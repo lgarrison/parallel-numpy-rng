@@ -92,11 +92,8 @@ def test_resume(someN, seed, nthread, dtype, funcname):
         
         res = np.empty(N, dtype=dtype)
         i = 0
-        print(f'N: {N}')
         while i < N:
-            # TODO: going to be slow for large N!
             n = rng.integers(low=1,high=N-i+1)
-            print(f'i,n: {i},{n}')
             res[i:i+n] = func(size=n, nthread=nthread, dtype=dtype)
             i += n
 
