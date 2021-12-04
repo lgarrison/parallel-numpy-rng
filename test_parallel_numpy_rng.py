@@ -68,7 +68,11 @@ def test_threads(allN, seed, nthread, dtype, funcname):
         func = getattr(mtg,funcname)
         p = func(size=N, nthread=nthread, dtype=dtype)
 
-        assert np.all(s == p)
+        if not np.all(s == p):
+            print(f'allclose: {np.allclose(s,p)}')
+            print(s - p)
+            print(np.abs(s - p).max(), np.abs(s - p).argmax())
+            assert np.all(s == p)
     
     
 def test_resume(someN, seed, nthread, dtype, funcname):
