@@ -1,5 +1,6 @@
 # parallel-numpy-rng
 ![tests](https://github.com/lgarrison/parallel-numpy-rng/actions/workflows/test.yml/badge.svg)
+
 A multi-threaded random number generator, backed by Numpy RNG.
 
 ## Overview
