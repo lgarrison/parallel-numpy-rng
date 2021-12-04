@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-# TODO: add PCG64 test
+# TODO: add PCG64DXSM test
 
 # TODO: repeatedly testing N < Nthread isn't exercising anything new
 maxthreads = len(os.sched_getaffinity(0))
@@ -58,12 +58,12 @@ def test_threads(allN, seed, nthread, dtype, funcname):
     from parallel_numpy_rng import MTGenerator
     
     for N in allN:
-        pcg = np.random.PCG64DXSM(seed)
+        pcg = np.random.PCG64(seed)
         mtg = MTGenerator(pcg)
         func = getattr(mtg,funcname)
         s = func(size=N, nthread=1, dtype=dtype)
 
-        pcg = np.random.PCG64DXSM(seed)
+        pcg = np.random.PCG64(seed)
         mtg = MTGenerator(pcg)
         func = getattr(mtg,funcname)
         p = func(size=N, nthread=nthread, dtype=dtype)
@@ -81,12 +81,12 @@ def test_resume(someN, seed, nthread, dtype, funcname):
     rng = np.random.default_rng(seed)
     
     for N in someN:
-        pcg = np.random.PCG64DXSM(seed)
+        pcg = np.random.PCG64(seed)
         mtg = MTGenerator(pcg)
         func = getattr(mtg,funcname)
         a = func(size=N, nthread=nthread, dtype=dtype)
         
-        pcg = np.random.PCG64DXSM(seed)
+        pcg = np.random.PCG64(seed)
         mtg = MTGenerator(pcg)
         func = getattr(mtg,funcname)
         
@@ -115,11 +115,11 @@ def test_uniform_matches_numpy(someN, seed, nthread, dtype):
     from parallel_numpy_rng import MTGenerator
     
     for N in someN:
-        pcg = np.random.PCG64DXSM(seed)
+        pcg = np.random.PCG64(seed)
         mtg = MTGenerator(pcg)
         a = mtg.random(size=N, nthread=nthread, dtype=dtype)
         
-        rng = np.random.Generator(np.random.PCG64DXSM(seed))
+        rng = np.random.Generator(np.random.PCG64(seed))
         b = rng.random(size=N, dtype=dtype)
         
         if dtype == np.float64:

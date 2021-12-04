@@ -16,7 +16,7 @@ __all__ = ['default_rng', 'MTGenerator']
 def default_rng(seed):
     '''A convenience function to create a ``MTGenerator`` with the default
     Numpy bit generator'''
-    return MTGenerator(np.random.PCG64DXSM(seed))
+    return MTGenerator(np.random.PCG64(seed))
 
 
 class MTGenerator:
@@ -28,7 +28,7 @@ class MTGenerator:
     Usage
     -----
     ```python
-    p = np.random.PCG64DXSM(123)  # or PCG64
+    p = np.random.PCG64(123)  # or PCG64DXSM
     mtg = MTGenerator(p)
     r1 = mtg.random(size=16, nthread=2, dtype=np.float32)
     r2 = mtg.standard_normal(size=16, nthread=2, dtype=np.float32)
@@ -243,11 +243,12 @@ _next_uint32_pcg64 = np.random.PCG64().ctypes.next_uint32
 def _next_float_pcg64(state):
     return np.float32(np.int32(_next_uint32_pcg64(state) >> np.uint32(8)) * (np.float32(1.) / np.float32(16777216.)))
 
-_next_uint32_pcg64dxsm = np.random.PCG64DXSM().ctypes.next_uint32
-@njit(fastmath=True)
-def _next_float_pcg64dxsm(state):
-    return np.float32(np.int32(_next_uint32_pcg64dxsm(state) >> np.uint32(8)) * (np.float32(1.) / np.float32(16777216.)))
+_next_float={'PCG64':_next_float_pcg64}
 
-_next_float=dict(PCG64=_next_float_pcg64,
-                 PCG64DXSM=_next_float_pcg64dxsm,
-                )
+if hasattr(np.random, 'PCG64DXSM'):
+    # Numpy >= 1.21
+    _next_uint32_pcg64dxsm = np.random.PCG64DXSM().ctypes.next_uint32
+    @njit(fastmath=True)
+    def _next_float_pcg64dxsm(state):
+        return np.float32(np.int32(_next_uint32_pcg64dxsm(state) >> np.uint32(8)) * (np.float32(1.) / np.float32(16777216.)))
+    _next_float['PCG64DXSM'] = _next_float_pcg64dxsm
