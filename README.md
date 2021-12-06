@@ -26,7 +26,7 @@ numpy_rng = np.random.Generator(p)
 %timeit parallel_rng.standard_normal(size=10**8, dtype=np.float32, nthread=128)  # 36.6 ms
 ```
 
-Note that the `parallel_rng` is slower when using a single thread, because the parallel implementation requires a slower algorithm in some cases (this is especially noticeable for float64 and normals)
+Note that the `parallel_rng` is slower than Numpy when using a single thread, because the parallel implementation requires a slower algorithm in some cases (this is especially noticeable for float64 and normals)
 
 ## Status
 The code works and is [reasonably well tested](./test_parallel_numpy_rng.py) so is probably ready for use. I haven't decided on a distribution method yet; maybe it will just live here, or maybe it's worth spinning out into its own PyPI repo.
