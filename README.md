@@ -11,11 +11,11 @@ is that you get the same random numbers regardless of how many threads were used
 ## Example + Performance
 ```python
 import numpy as np
-from parallel_numpy_rng import MTGenerator
+import parallel_numpy_rng
 
-p = np.random.PCG64(123)
-parallel_rng = MTGenerator(p)
-numpy_rng = np.random.Generator(p)
+seed = 123
+parallel_rng = parallel_numpy_rng.default_rng(seed)
+numpy_rng = np.random.default_rng(seed)
 
 %timeit numpy_rng.random(size=10**9, dtype=np.float32)                           # 2.89 s
 %timeit parallel_rng.random(size=10**9, dtype=np.float32, nthread=1)             # 3.35 s
