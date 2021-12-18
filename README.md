@@ -17,13 +17,13 @@ seed = 123
 parallel_rng = parallel_numpy_rng.default_rng(seed)
 numpy_rng = np.random.default_rng(seed)
 
-%timeit numpy_rng.random(size=10**9, dtype=np.float32)                           # 2.89 s
-%timeit parallel_rng.random(size=10**9, dtype=np.float32, nthread=1)             # 3.35 s
-%timeit parallel_rng.random(size=10**9, dtype=np.float32, nthread=128)           # 73.9 ms
+%timeit numpy_rng.random(size=10**9, dtype=np.float32)                           # 2.85 s
+%timeit parallel_rng.random(size=10**9, dtype=np.float32, nthread=1)             # 3.34 s
+%timeit parallel_rng.random(size=10**9, dtype=np.float32, nthread=128)           # 67.8 ms
 
-%timeit numpy_rng.standard_normal(size=10**8, dtype=np.float32)                  # 1.13 s
-%timeit parallel_rng.standard_normal(size=10**8,dtype=np.float32, nthread=1)     # 1.87 s
-%timeit parallel_rng.standard_normal(size=10**8, dtype=np.float32, nthread=128)  # 36.6 ms
+%timeit numpy_rng.standard_normal(size=10**8, dtype=np.float32)                  # 1.12 s
+%timeit parallel_rng.standard_normal(size=10**8,dtype=np.float32, nthread=1)     # 1.85 s
+%timeit parallel_rng.standard_normal(size=10**8, dtype=np.float32, nthread=128)  # 43.5 ms
 ```
 
 Note that the `parallel_rng` is slower than Numpy when using a single thread, because the parallel implementation requires a slower algorithm in some cases (this is especially noticeable for float64 and normals)
