@@ -69,6 +69,8 @@ class MTGenerator:
             size = 1
         if nthread == None:
             nthread = self.nthread
+        if nthread < 1:
+            raise ValueError("nthread must be >= 1")
         if nthread > size:
             nthread = size
         
@@ -128,6 +130,8 @@ class MTGenerator:
             nthread = self.nthread
         if nthread > max(size//2,1):
             nthread = max(size//2,1)
+        if nthread < 1:
+            raise ValueError("nthread must be >= 1")
         if out is None:
             out = np.empty(size, dtype=dtype)
         if size == 0:
@@ -193,7 +197,7 @@ class MTGenerator:
 @njit(fastmath=True, parallel=True)
 def _random(states, starts, out, next_double):
     nthread = len(states)
-    numba.set_num_threads(nthread)
+    numba.set_num_threads(max(1,nthread))
 
     for t in numba.prange(nthread):
         a = starts[t]
@@ -206,7 +210,7 @@ def _random(states, starts, out, next_double):
 @njit(fastmath=True,parallel=True)
 def _boxmuller(states, starts, out, next_double):
     nthread = len(states)
-    numba.set_num_threads(nthread)
+    numba.set_num_threads(max(1,nthread))
     dtype = out.dtype.type
 
     cache = np.full(1, np.nan, dtype=dtype)
