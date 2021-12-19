@@ -135,3 +135,21 @@ def test_uniform_matches_numpy(someN, seed, nthread, dtype):
             assert np.allclose(a, b, atol=1e-7)
         else:
             raise ValueError(dtype)
+
+
+def test_finite_normals_float32():
+    '''
+    If the floats fed to Box-Muller can include 0, it will produce infinity.
+    We use the interval (0,1] to avoid this.
+    
+    In theory, we ought to test float64 the same way. But it's hard to find
+    a PCG state that produces 53 zeros...
+    
+    https://github.com/lgarrison/parallel-numpy-rng/issues/1
+    '''
+    from parallel_numpy_rng import MTGenerator
+    pcg = np.random.PCG64(1194)
+    mtg = MTGenerator(pcg)
+    a = mtg.standard_normal(size=20000, nthread=maxthreads, dtype=np.float32)
+    assert np.all(np.isfinite(a))
+    
