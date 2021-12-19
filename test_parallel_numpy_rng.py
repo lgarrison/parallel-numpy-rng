@@ -58,6 +58,10 @@ def test_threads(allN, seed, nthread, dtype, funcname):
     from parallel_numpy_rng import MTGenerator
     
     for N in allN:
+        if N < maxthreads-1:
+            # don't repeatedly test N < nthread
+            continue
+            
         pcg = np.random.PCG64(seed)
         mtg = MTGenerator(pcg)
         func = getattr(mtg,funcname)
@@ -88,6 +92,10 @@ def test_resume(someN, seed, nthread, dtype, funcname):
     rng = np.random.default_rng(seed)
     
     for N in someN:
+        if N < maxthreads-1:
+            # don't repeatedly test N < nthread
+            continue
+            
         pcg = np.random.PCG64(seed)
         mtg = MTGenerator(pcg)
         func = getattr(mtg,funcname)
@@ -108,6 +116,47 @@ def test_resume(someN, seed, nthread, dtype, funcname):
             assert np.allclose(a, res, atol=1e-7, rtol=0.)
         elif dtype == np.float64:
             assert np.allclose(a, res, atol=1e-15, rtol=0.)
+            
+
+def test_mixing_threads(someN, seed, nthread, dtype):
+    '''Test that changing the number of threads mid-stream
+    doesn't matter.  Only standard normal holds any interesting
+    external state.
+    '''
+    funcname = 'standard_normal'
+    from parallel_numpy_rng import MTGenerator
+    
+    rng = np.random.default_rng(seed)
+    maxthreads = nthread
+    del nthread
+    
+    for N in someN:
+        if N < maxthreads-1:
+            # don't repeatedly test N < nthread
+            continue
+            
+        pcg = np.random.PCG64(seed)
+        mtg = MTGenerator(pcg)
+        func = getattr(mtg,funcname)
+        a = func(size=N, nthread=maxthreads, dtype=dtype)
+        
+        pcg = np.random.PCG64(seed)
+        mtg = MTGenerator(pcg)
+        func = getattr(mtg,funcname)
+        
+        res = np.empty(N, dtype=dtype)
+        i = 0
+        tstart = np.linspace(0, N, maxthreads+1, endpoint=True, dtype=int)
+        # sweep from 1 to maxthreads
+        for t in range(maxthreads):
+            n = tstart[t+1]-tstart[t]
+            res[i:i+n] = func(size=n, nthread=t+1, dtype=dtype)
+            i += n
+
+        if dtype == np.float32:
+            assert np.allclose(a, res, atol=1e-7, rtol=0.)
+        elif dtype == np.float64:
+            assert np.allclose(a, res, atol=1e-15, rtol=0.)
 
     
 def test_uniform_matches_numpy(someN, seed, nthread, dtype):
@@ -122,6 +171,10 @@ def test_uniform_matches_numpy(someN, seed, nthread, dtype):
     from parallel_numpy_rng import MTGenerator
     
     for N in someN:
+        if N < maxthreads-1:
+            # don't repeatedly test N < nthread
+            continue
+            
         pcg = np.random.PCG64(seed)
         mtg = MTGenerator(pcg)
         a = mtg.random(size=N, nthread=nthread, dtype=dtype)
