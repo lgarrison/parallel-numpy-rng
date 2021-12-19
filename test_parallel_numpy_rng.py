@@ -58,7 +58,7 @@ def test_threads(allN, seed, nthread, dtype, funcname):
     from parallel_numpy_rng import MTGenerator
     
     for N in allN:
-        if N < maxthreads-1:
+        if N < nthread-1:
             # don't repeatedly test N < nthread
             continue
             
@@ -92,7 +92,7 @@ def test_resume(someN, seed, nthread, dtype, funcname):
     rng = np.random.default_rng(seed)
     
     for N in someN:
-        if N < maxthreads-1:
+        if N < nthread-1:
             # don't repeatedly test N < nthread
             continue
             
@@ -157,6 +157,54 @@ def test_mixing_threads(someN, seed, nthread, dtype):
             assert np.allclose(a, res, atol=1e-7, rtol=0.)
         elif dtype == np.float64:
             assert np.allclose(a, res, atol=1e-15, rtol=0.)
+            
+            
+def test_mixing_func(someN, seed, nthread, dtype):
+    '''Test interleaving random and standard_normal works for different N/thread
+    '''
+    
+    from parallel_numpy_rng import MTGenerator
+    
+    rng = np.random.default_rng(seed)
+    
+    for N in someN:
+        if N < nthread-1:
+            # don't repeatedly test N < nthread
+            continue
+            
+        pcg = np.random.PCG64(seed)
+        mtg = MTGenerator(pcg)
+        coin_seed = rng.integers(2**16)
+        coin_rng = np.random.default_rng(coin_seed)
+            
+        nchunk = max(2,N//100)
+        serial = np.empty(N, dtype=dtype)
+        i = 0
+        tstart = np.linspace(0, N, nchunk+1, endpoint=True, dtype=int)
+        for t in range(nchunk):
+            n = tstart[t+1]-tstart[t]
+            # in each chunk, flip a coin to decide the function
+            func = mtg.random if coin_rng.integers(2) else mtg.standard_normal
+            serial[i:i+n] = func(size=n, nthread=1, dtype=dtype)
+            i += n
+            
+            
+        pcg = np.random.PCG64(seed)
+        mtg = MTGenerator(pcg)
+        coin_rng = np.random.default_rng(coin_seed)
+        
+        parallel = np.empty(N, dtype=dtype)
+        i = 0
+        for t in range(nchunk):
+            n = tstart[t+1]-tstart[t]
+            func = mtg.random if coin_rng.integers(2) else mtg.standard_normal
+            parallel[i:i+n] = func(size=n, nthread=nthread, dtype=dtype)
+            i += n
+        
+        if dtype == np.float32:
+            assert np.allclose(serial, parallel, atol=1e-7, rtol=0.)
+        elif dtype == np.float64:
+            assert np.allclose(serial, parallel, atol=1e-15, rtol=0.)
 
     
 def test_uniform_matches_numpy(someN, seed, nthread, dtype):
@@ -205,4 +253,3 @@ def test_finite_normals_float32():
     mtg = MTGenerator(pcg)
     a = mtg.standard_normal(size=20000, nthread=maxthreads, dtype=np.float32)
     assert np.all(np.isfinite(a))
-    
