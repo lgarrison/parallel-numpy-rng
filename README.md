@@ -8,6 +8,10 @@ Uses the "fast-forward" capability of the PCG-family of RNG, as exposed by the
 new-style Numpy RNG API, to generate random numbers in a multi-threaded manner. The key
 is that you get the same random numbers regardless of how many threads were used.
 
+Only a two types of random numbers are supported right now: uniform and normal. More
+could be added if there is demand, although some kinds, like bounded random ints, are
+hard to parallelize in the approach used here.
+
 ## Example + Performance
 ```python
 import numpy as np
@@ -28,7 +32,8 @@ numpy_rng = np.random.default_rng(seed)
 
 Note that the `parallel_rng` is slower than Numpy when using a single thread, because the parallel implementation requires a slower algorithm in some cases (this is especially noticeable for float64 and normals)
 
-## Status
-The code works and is [reasonably well tested](./test_parallel_numpy_rng.py), so it's probably ready for use. I haven't decided on a distribution method yet; maybe it will just live here, or maybe it's worth spinning out into its own PyPI repo.
-
-Only a two types of random numbers are supported right now: uniform and normal. More could be added if there is demand, although some kinds, like bounded random ints, are hard to parallelize in the approach used here.
+## Installation
+The code works and is [reasonably well tested](./test_parallel_numpy_rng.py), so it's probably ready for use.  It can be installed from PyPI:
+```console
+$ pip install parallel-numpy-rng
+```
