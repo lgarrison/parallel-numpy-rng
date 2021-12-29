@@ -11,6 +11,8 @@ import numba
 from numba import njit
 import numpy as np
 
+from . import utils
+
 __all__ = ['default_rng', 'MTGenerator']
 
 def default_rng(seed):
@@ -234,42 +236,9 @@ def _boxmuller(states, starts, out, next_double):
 
     return cache[0]
 
-# TODO: there are now enough of these that they should live in their own module
-# TODO: for very low latency cases, there may be benefit to inlining these
-
-def _generate_int_to_float(bitgen):
-    # initialize the numba functions to convert ints to floats
-    _next_uint32_pcg64 = bitgen().ctypes.next_uint32
-    _next_uint64_pcg64 = bitgen().ctypes.next_uint64
-
-    @njit(fastmath=True)
-    def _next_float_pcg64(state):
-        '''Random float in the semi-open interval [0,1)'''
-        return np.float32(np.int32(_next_uint32_pcg64(state) >> np.uint32(8)) * (np.float32(1.) / np.float32(16777216.)))
-
-    @njit(fastmath=True)
-    def _next_float_pcg64_nonzero(state):
-        '''Random float in the semi-open interval (0,1]'''
-        return np.float32((np.int32(_next_uint32_pcg64(state) >> np.uint32(8)) + np.int32(1))  * (np.float32(1.) / np.float32(16777216.)))
-
-    @njit(fastmath=True)
-    def _next_double_pcg64(state):
-        '''Random double in the semi-open interval [0,1)'''
-        return np.float64(np.int64(_next_uint64_pcg64(state) >> np.uint64(11)) * (np.float64(1.) / np.float64(9007199254740992.)))
-
-    @njit(fastmath=True)
-    def _next_double_pcg64_nonzero(state):
-        '''Random double in the semi-open interval (0,1]'''
-        return np.float64((np.int64(_next_uint64_pcg64(state) >> np.uint64(11)) + np.int64(1))  * (np.float64(1.) / np.float64(9007199254740992.)))
-    
-    _next_float = {'zero': {np.float32:_next_float_pcg64, np.float64:_next_double_pcg64},
-                   'nonzero': {np.float32:_next_float_pcg64_nonzero, np.float64:_next_double_pcg64_nonzero},
-                  }
-    return _next_float
-
 _next_float = {}
-_next_float['PCG64'] = _generate_int_to_float(np.random.PCG64)
+_next_float['PCG64'] = utils.generate_int_to_float(np.random.PCG64)
 
 if hasattr(np.random, 'PCG64DXSM'):
     # Numpy >= 1.21
-    _next_float['PCG64XDSM'] = _generate_int_to_float(np.random.PCG64DXSM)
+    _next_float['PCG64XDSM'] = utils.generate_int_to_float(np.random.PCG64DXSM)
