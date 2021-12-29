@@ -1,5 +1,5 @@
 # parallel-numpy-rng
-[![tests](https://github.com/lgarrison/parallel-numpy-rng/actions/workflows/test.yml/badge.svg)](https://github.com/lgarrison/parallel-numpy-rng/actions/workflows/test.yml)
+[![tests](https://github.com/lgarrison/parallel-numpy-rng/actions/workflows/test.yml/badge.svg)](https://github.com/lgarrison/parallel-numpy-rng/actions/workflows/test.yml) [![PyPI](https://img.shields.io/pypi/v/parallel-numpy-rng)](https://pypi.org/project/parallel-numpy-rng/)
 
 A multi-threaded random number generator backed by Numpy RNG, with parallelism provided by Numba.
 
