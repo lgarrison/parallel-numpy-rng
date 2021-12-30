@@ -4,8 +4,9 @@
 A multi-threaded random number generator backed by Numpy RNG, with parallelism provided by Numba.
 
 ## Overview
-Uses the "fast-forward" capability of the PCG-family of RNG, as exposed by the
-new-style Numpy RNG API, to generate random numbers in a multi-threaded manner. The key
+Uses the "fast-forward" capability of the [PCG family of RNG](https://www.pcg-random.org)
+, as exposed by the [new-style Numpy RNG API](https://numpy.org/doc/stable/reference/random/index.html),
+to generate random numbers in a multi-threaded manner. The key
 is that you get the same random numbers regardless of how many threads were used.
 
 Only a two types of random numbers are supported right now: uniform and normal. More
@@ -37,3 +38,31 @@ The code works and is [reasonably well tested](./test_parallel_numpy_rng.py), so
 ```console
 $ pip install parallel-numpy-rng
 ```
+
+## Details
+Random number generation can be slow, even with modern algorithms like PCG, so it's helpful to
+be able to use multiple threads. The easy way to do this is to give each thread a different
+seed, but then the RNG sequence will depend on how many threads you used and how you did the
+seed offset. It would be nice if the RNG sequence could be the output of a single logical 
+sequence (i.e. the stream resulting from a single seed), and the number of threads could
+just be an implementation detail.
+
+The key capability to enable this is cheap fast-forwarding of the underlying RNG.  For example,
+if we know we want to generate *N* random numbers, we know the first thread will do *N/2* calls
+to the RNG, thus advancing its internal state that many times. Therefore, we would like to start
+the second thread's RNG in a state that is already advanced *N/2* times, but without actually making
+*N/2* calls to get there.
+
+This is known as fast-forwarding, or jump-ahead. [Numpy's new RNG API](https://numpy.org/doc/stable/reference/random/index.html)
+(as of Numpy 1.17) uses the PCG RNG that supports this feature, and Numpy exposes an [`advance()`
+method](https://numpy.org/doc/stable/reference/random/bit_generators/generated/numpy.random.PCG64.advance.html#numpy.random.PCG64.advance)
+which implements it.  The new API also exposes CFFI bindings to get PCG random values,
+so we can implement the core loop, including parallelism, in a Numba-compiled function
+that can call the RNG via a low-level function pointer.
+
+An interesting consequence of using fast-forwarding is that each random value must be generated
+with a known number of calls to the underling RNG, so that we know how many steps to advance
+the RNG state by. This means we can't use rejection sampling, which makes a variable number of
+calls.  Fortunately, inverse-transform sampling can usually substitute, or more specific methods
+like Box-Muller. These can be slower than rejection sampling (or whatever Numpy uses) with one
+thread, but even just two threads more than makes up for the difference.
