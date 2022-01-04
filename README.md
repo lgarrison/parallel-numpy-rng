@@ -4,14 +4,17 @@
 A multi-threaded random number generator backed by Numpy RNG, with parallelism provided by Numba.
 
 ## Overview
-Uses the "fast-forward" capability of the [PCG family of RNG](https://www.pcg-random.org)
-, as exposed by the [new-style Numpy RNG API](https://numpy.org/doc/stable/reference/random/index.html),
+Uses the "fast-forward" capability of the [PCG family of RNG](https://www.pcg-random.org),
+as exposed by the [new-style Numpy RNG API](https://numpy.org/doc/stable/reference/random/index.html),
 to generate random numbers in a multi-threaded manner. The key
 is that you get the same random numbers regardless of how many threads were used.
 
 Only a two types of random numbers are supported right now: uniform and normal. More
 could be added if there is demand, although some kinds, like bounded random ints, are
 hard to parallelize in the approach used here.
+
+The uniform randoms are the same as Numpy produces for a given seed, although the
+random normals are not.
 
 ## Example + Performance
 ```python
@@ -48,7 +51,7 @@ sequence (i.e. the stream resulting from a single seed), and the number of threa
 just be an implementation detail.
 
 The key capability to enable this is cheap fast-forwarding of the underlying RNG.  For example,
-if we know we want to generate *N* random numbers, we know the first thread will do *N/2* calls
+if we want to generate *N* random numbers with 2 threads, we know the first thread will do *N/2* calls
 to the RNG, thus advancing its internal state that many times. Therefore, we would like to start
 the second thread's RNG in a state that is already advanced *N/2* times, but without actually making
 *N/2* calls to get there.
