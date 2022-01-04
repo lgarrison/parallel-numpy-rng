@@ -64,7 +64,7 @@ so we can implement the core loop, including parallelism, in a Numba-compiled fu
 that can call the RNG via a low-level function pointer.
 
 An interesting consequence of using fast-forwarding is that each random value must be generated
-with a known number of calls to the underling RNG, so that we know how many steps to advance
+with a known number of calls to the underlying RNG, so that we know how many steps to advance
 the RNG state by. This means we can't use rejection sampling, which makes a variable number of
 calls.  Fortunately, inverse-transform sampling can usually substitute, or more specific methods
 like Box-Muller. These can be slower than rejection sampling (or whatever Numpy uses) with one
