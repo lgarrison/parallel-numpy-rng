@@ -73,6 +73,8 @@ class MTGenerator:
             nthread = self.nthread
         if nthread < 1:
             raise ValueError("nthread must be >= 1")
+        _size = size
+        size = np.prod(size, dtype=np.intp)
         if nthread > size:
             nthread = size
         
@@ -100,7 +102,7 @@ class MTGenerator:
         # finally, advance the base RNG
         self._advance_bitgen(self.bitgen, size, vals_per_call)
         
-        return out
+        return out.reshape(_size)
     
     @staticmethod
     def _advance_bitgen(bitgen, vals, vals_per_call):
@@ -128,6 +130,8 @@ class MTGenerator:
         '''
         if size == None:
             size = 1
+        _size = size
+        size = np.prod(size, dtype=np.intp)
         if nthread == None:
             nthread = self.nthread
         if nthread > max(size//2,1):
@@ -179,7 +183,7 @@ class MTGenerator:
         # finally, advance the base RNG
         self.bitgen.advance(ff[-1]//vals_per_call)
         
-        return out
+        return out.reshape(_size)
 
 
     @staticmethod
