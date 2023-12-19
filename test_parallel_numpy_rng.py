@@ -88,7 +88,7 @@ def test_threads(allN, seed, nthread, dtype, funcname):
         elif dtype == np.float64:
             assert np.allclose(s, p, atol=1e-15, rtol=0.)
 
-def test_threads_shape(shapedN, seed, nthread, dtype, funcname):# 1个线程的结果同N个线程的结果
+def test_threads_shape(shapedN, seed, nthread, dtype, funcname):
     '''do different nthreads give the same answer?
     '''
     
