@@ -34,6 +34,8 @@ class MTGenerator:
     mtg = MTGenerator(p)
     r1 = mtg.random(size=16, nthread=2, dtype=np.float32)
     r2 = mtg.standard_normal(size=16, nthread=2, dtype=np.float32)
+    r3 = mtg.standard_normal(size=(16,3), nthread=2, dtype=np.float32)
+    r4 = mtg.standard_normal(size=(16,11,12), nthread=2, dtype=np.float32)
     ```
     
     Details
