@@ -30,6 +30,13 @@ def someN(request):
     Ntest = sorted(list(set(Ntest)))
     return Ntest
 
+@pytest.fixture(scope='module')
+def shapedN(request):
+    '''5 dims'''
+    _rng = np.random.default_rng(123)
+    def _genlist(n):
+        return list((10**(_rng.random(size=n)*2)).astype(int))
+    return [tuple( _genlist(n) ) for n in range(1,6) ]
 
 @pytest.fixture(scope='module', params=[123,0xDEADBEEF], ids=['seed1','seed2'])
 def seed(request):
@@ -80,7 +87,36 @@ def test_threads(allN, seed, nthread, dtype, funcname):
             assert np.allclose(s, p, atol=1e-7, rtol=0.)
         elif dtype == np.float64:
             assert np.allclose(s, p, atol=1e-15, rtol=0.)
+
+def test_threads_shape(shapedN, seed, nthread, dtype, funcname):
+    '''do different nthreads give the same answer?
+    '''
     
+    from parallel_numpy_rng import MTGenerator
+    
+    for N in shapedN:
+        if np.prod(N, dtype=np.intp) < nthread-1:
+            # don't repeatedly test N < nthread
+            continue
+            
+        pcg = np.random.PCG64(seed)
+        mtg = MTGenerator(pcg)
+        func = getattr(mtg,funcname)
+        s = func(size=N, nthread=1, dtype=dtype)
+
+        pcg = np.random.PCG64(seed)
+        mtg = MTGenerator(pcg)
+        func = getattr(mtg,funcname)
+        p = func(size=N, nthread=nthread, dtype=dtype)
+
+        # In theory, different numbers of threads will yield bit-wise identical answers
+        # But in practice, the last digit changes sometimes. This is probably because
+        # different code paths are taken based on alignment.
+        # We will use atol because our values are all O(unity)
+        if dtype == np.float32:
+            assert np.allclose(s, p, atol=1e-7, rtol=0.)
+        elif dtype == np.float64:
+            assert np.allclose(s, p, atol=1e-15, rtol=0.)
     
 def test_resume(someN, seed, nthread, dtype, funcname):
     '''Test that generating an array of randoms with one call

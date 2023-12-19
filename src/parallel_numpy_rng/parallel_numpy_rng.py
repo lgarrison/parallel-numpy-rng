@@ -34,6 +34,8 @@ class MTGenerator:
     mtg = MTGenerator(p)
     r1 = mtg.random(size=16, nthread=2, dtype=np.float32)
     r2 = mtg.standard_normal(size=16, nthread=2, dtype=np.float32)
+    r3 = mtg.standard_normal(size=(16,3), nthread=2, dtype=np.float32)
+    r4 = mtg.standard_normal(size=(16,11,12), nthread=2, dtype=np.float32)
     ```
     
     Details
@@ -73,6 +75,8 @@ class MTGenerator:
             nthread = self.nthread
         if nthread < 1:
             raise ValueError("nthread must be >= 1")
+        _size = size
+        size = np.prod(size, dtype=np.intp)
         if nthread > size:
             nthread = size
         
@@ -100,7 +104,7 @@ class MTGenerator:
         # finally, advance the base RNG
         self._advance_bitgen(self.bitgen, size, vals_per_call)
         
-        return out
+        return out.reshape(_size)
     
     @staticmethod
     def _advance_bitgen(bitgen, vals, vals_per_call):
@@ -128,6 +132,8 @@ class MTGenerator:
         '''
         if size == None:
             size = 1
+        _size = size
+        size = np.prod(size, dtype=np.intp)
         if nthread == None:
             nthread = self.nthread
         if nthread > max(size//2,1):
@@ -179,7 +185,7 @@ class MTGenerator:
         # finally, advance the base RNG
         self.bitgen.advance(ff[-1]//vals_per_call)
         
-        return out
+        return out.reshape(_size)
 
 
     @staticmethod
