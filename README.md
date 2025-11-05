@@ -1,19 +1,19 @@
 # parallel-numpy-rng
 [![tests](https://github.com/lgarrison/parallel-numpy-rng/actions/workflows/test.yml/badge.svg)](https://github.com/lgarrison/parallel-numpy-rng/actions/workflows/test.yml) [![PyPI](https://img.shields.io/pypi/v/parallel-numpy-rng)](https://pypi.org/project/parallel-numpy-rng/)
 
-A multi-threaded random number generator backed by Numpy RNG, with parallelism provided by Numba.
+A multi-threaded random number generator backed by NumPy RNG, with parallelism provided by Numba.
 
 ## Overview
-Uses the "fast-forward" capability of the [PCG family of RNG](https://www.pcg-random.org),
-as exposed by the [new-style Numpy RNG API](https://numpy.org/doc/stable/reference/random/index.html),
-to generate random numbers in a multi-threaded manner. The key
-is that you get the same random numbers regardless of how many threads were used.
+This package uses the "fast-forward" capability of the [PCG family of RNG](https://www.pcg-random.org),
+as exposed by the [new-style NumPy RNG API](https://numpy.org/doc/stable/reference/random/index.html),
+to generate arrays of random numbers in a multi-threaded manner. The result depends only on the random
+number seed, not the number of threads.
 
 Only a two types of random numbers are supported right now: uniform and normal. More
 could be added if there is demand, although some kinds, like bounded random ints, are
 hard to parallelize in the approach used here.
 
-The uniform randoms are the same as Numpy produces for a given seed, although the
+The uniform randoms are the same as NumPy produces for a given seed, although the
 random normals are not.
 
 ## Example + Performance
@@ -34,7 +34,7 @@ numpy_rng = np.random.default_rng(seed)
 %timeit parallel_rng.standard_normal(size=10**8, dtype=np.float32, nthread=128)  # 43.5 ms
 ```
 
-Note that the `parallel_rng` is slower than Numpy when using a single thread, because the parallel implementation requires a slower algorithm in some cases (this is especially noticeable for float64 and normals)
+Note that the `parallel_rng` is slower than NumPy when using a single thread, because the parallel implementation requires a slower algorithm in some cases (this is especially noticeable for float64 and normals)
 
 ## Installation
 The code works and is [reasonably well tested](./test_parallel_numpy_rng.py), so it's probably ready for use.  It can be installed from PyPI:
@@ -56,8 +56,8 @@ to the RNG, thus advancing its internal state that many times. Therefore, we wou
 the second thread's RNG in a state that is already advanced *N/2* times, but without actually making
 *N/2* calls to get there.
 
-This is known as fast-forwarding, or jump-ahead. [Numpy's new RNG API](https://numpy.org/doc/stable/reference/random/index.html)
-(as of Numpy 1.17) uses the PCG RNG that supports this feature, and Numpy exposes an [`advance()`
+This is known as fast-forwarding, or jump-ahead. [NumPy's new RNG API](https://numpy.org/doc/stable/reference/random/index.html)
+(as of NumPy 1.17) uses the PCG RNG that supports this feature, and NumPy exposes an [`advance()`
 method](https://numpy.org/doc/stable/reference/random/bit_generators/generated/numpy.random.PCG64.advance.html#numpy.random.PCG64.advance)
 which implements it.  The new API also exposes CFFI bindings to get PCG random values,
 so we can implement the core loop, including parallelism, in a Numba-compiled function
@@ -67,5 +67,5 @@ An interesting consequence of using fast-forwarding is that each random value mu
 with a known number of calls to the underlying RNG, so that we know how many steps to advance
 the RNG state by. This means we can't use rejection sampling, which makes a variable number of
 calls.  Fortunately, inverse-transform sampling can usually substitute, or more specific methods
-like Box-Muller. These can be slower than rejection sampling (or whatever Numpy uses) with one
+like Box-Muller. These can be slower than rejection sampling (or whatever NumPy uses) with one
 thread, but even just two threads more than makes up for the difference.
