@@ -162,7 +162,6 @@ def test_mixing_threads(someN, seed, nthread, dtype):
     funcname = 'standard_normal'
     from parallel_numpy_rng import MTGenerator
     
-    rng = np.random.default_rng(seed)
     maxthreads = nthread
     del nthread
     

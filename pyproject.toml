@@ -1,12 +1,47 @@
 [build-system]
 requires = [
     "setuptools>=42",
-    "wheel",
     "setuptools_scm>=6.2",
 ]
 
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "parallel-numpy-rng"
+authors = [
+    {name = "Lehman Garrison"},
+]
+description = "Parallel random number generation that produces the same result, regardless of the number of threads"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "numpy>=1.17",
+    "numba>=0.54.1",
+]
+dynamic = ["version"]
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[dependency-groups]
+dev = ["parallel-numpy-rng[test]"]
+
+[project.urls]
+Homepage = "https://github.com/lgarrison/parallel-numpy-rng/"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.setuptools_scm]
 write_to = "src/parallel_numpy_rng/version.py"
-write_to_template = '__version__ = "{version}"'
+
+[tool.ruff.format]
+quote-style = "single"
