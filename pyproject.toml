@@ -18,8 +18,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "numpy>=1.17",
-    "numba>=0.54.1",
+    "numpy>=2",
+    "numba",
 ]
 dynamic = ["version"]
 license = "Apache-2.0"
