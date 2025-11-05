@@ -121,8 +121,7 @@ class MTGenerator:
             assert vals_per_call == 2  # only supposed to happen with float32
             bitgen.ctypes.next_uint32(bitgen.ctypes.state)
             vals -= 1
-        breakpoint()
-        bitgen.advance(vals // vals_per_call)
+        bitgen.advance(int(vals // vals_per_call))
         for _ in range(vals % vals_per_call):
             bitgen.ctypes.next_uint32(bitgen.ctypes.state)
 
@@ -174,7 +173,7 @@ class MTGenerator:
         states = np.empty(nthread, dtype=int)
         for t in range(nthread):
             bitgens += [self._copy_bitgen()]
-            bitgens[-1].advance(ff[t] // vals_per_call)
+            bitgens[-1].advance(int(ff[t] // vals_per_call))
             states[t] = bitgens[-1].ctypes.state_address
 
         # now offset the out array
@@ -189,18 +188,18 @@ class MTGenerator:
         if verify_rng:
             for t in range(nthread):
                 _b = self._copy_bitgen()
-                _b.advance(ff[t + 1] // vals_per_call)
+                _b.advance(int(ff[t + 1] // vals_per_call))
                 assert bitgens[t].state["state"] == _b.state["state"], t
 
         # finally, advance the base RNG
-        self.bitgen.advance(ff[-1] // vals_per_call)
+        self.bitgen.advance(int(ff[-1] // vals_per_call))
 
         return out.reshape(_size)
 
     @staticmethod
     def _advance_bitgen_boxmuller(bitgen, vals, vals_per_call):
         """Advance the bitgen for Box-Muller normals"""
-        bitgen.advance((vals // vals_per_call // 2) * 2)
+        bitgen.advance(int((vals // vals_per_call // 2) * 2))
         return (vals // vals_per_call) % 2
 
     def _copy_bitgen(self):
